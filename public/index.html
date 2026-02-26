@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Слайды — 5 агентов</title>
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --surface: #141418;
+      --card: #1a1a20;
+      --border: #2a2a32;
+      --text: #f0f0f4;
+      --muted: #8888a0;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --success: #22c55e;
+      --error: #ef4444;
+      --creating: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    h1 { margin: 0; font-size: 1.25rem; font-weight: 600; }
+    main {
+      flex: 1;
+      padding: 1rem;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .form {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .form input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .form input::placeholder { color: var(--muted); }
+    .form input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .form button:hover { background: var(--accent-hover); }
+    .form button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 1rem;
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 1000px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 400px;
+    }
+    .panel h2 {
+      margin: 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .log {
+      flex: 1;
+      overflow: auto;
+      padding: 0.75rem 1rem;
+      font-family: "Consolas", "Monaco", monospace;
+      font-size: 0.75rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-entry {
+      margin-bottom: 0.25rem;
+      padding: 0.2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .log-entry .agent { color: var(--accent); }
+    .log-entry .event { color: var(--muted); }
+    .slides-area {
+      flex: 1;
+      overflow: auto;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      align-content: start;
+    }
+    .slide-slot {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .slide-slot.creating {
+      border-color: var(--creating);
+      box-shadow: 0 0 0 1px var(--creating);
+    }
+    .slide-slot.ready {
+      border-color: rgba(34,197,94,0.4);
+      cursor: pointer;
+    }
+    .slide-slot.ready:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .slide-slot .img-wrap {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
+    }
+    .slide-slot .img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.4;
+      transition: opacity 0.5s;
+    }
+    .slide-slot.ready .img-wrap img {
+      opacity: 0.25; /* Darken background image to make text readable */
+    }
+    .slide-slot .img-wrap .placeholder {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
+      opacity: 0.9;
+    }
+    .slide-slot .content {
+      position: relative;
+      z-index: 2;
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.75rem;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .slide-slot .content .title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+    .slide-slot .content .body {
+      font-size: 0.9rem;
+      color: #e4e4e7;
+      line-height: 1.4;
+    }
+    .slide-slot.creating .content .title { color: var(--muted); }
+    .status {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      border-radius: 10px;
+    }
+    .status.idle { background: var(--surface); color: var(--muted); }
+    .status.running { background: rgba(99,102,241,0.15); color: var(--accent); }
+    .status.done { background: rgba(34,197,94,0.15); color: var(--success); }
+    .status.error { background: rgba(239,68,68,0.15); color: var(--error); }
+    
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      width: 90vw;
+      max-width: 1200px;
+      aspect-ratio: 16/9;
+      background: var(--bg);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal-content {
+      transform: scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 10;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: rgba(0,0,0,0.8); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Презентация: 5 агентов (как Gamma)</h1>
+  </header>
+  <main>
+    <div id="status" class="status idle">Введите тему и нажмите «Создать слайды». Слайды появятся по мере готовности.</div>
+    <div class="form">
+      <input type="text" id="topic" placeholder="Тема презентации (например: Введение в ИИ)" />
+      <button type="button" id="run">Создать слайды</button>
+    </div>
+    <div class="layout">
+      <div class="panel">
+        <h2>Ход работы</h2>
+        <div id="log" class="log"></div>
+      </div>
+      <div class="panel">
+        <h2>Слайды (создаются параллельно)</h2>
+        <div id="slides" class="slides-area"></div>
+      </div>
+    </div>
+  </main>
+  
+  <div id="modal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div id="modal-body" style="width:100%; height:100%; position:relative;"></div>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const topicEl = document.getElementById("topic");
+    const runBtn = document.getElementById("run");
+    const logEl = document.getElementById("log");
+    const slidesEl = document.getElementById("slides");
+    const modalEl = document.getElementById("modal");
+    const modalBody = document.getElementById("modal-body");
+    const modalClose = document.getElementById("modal-close");
+
+    const SLIDE_COUNT = 5;
+    let slideState = [];
+
+    function setStatus(klass, text) {
+      statusEl.className = "status " + klass;
+      statusEl.textContent = text;
+    }
+
+    function addLog(entry) {
+      const div = document.createElement("div");
+      div.className = "log-entry";
+      const agent = entry.event && String(entry.event).startsWith("[Agent") ? entry.event : (entry.agent || "");
+      const inner = entry.data && entry.data.event !== undefined ? entry.data : { event: entry.event, data: entry.data };
+      const ev = inner.event || "";
+      const dat = inner.data !== undefined ? (typeof inner.data === "object" ? JSON.stringify(inner.data) : String(inner.data)) : "";
+      div.innerHTML = "<span class=\"agent\">" + escapeHtml(agent) + "</span> " +
+        "<span class=\"event\">" + escapeHtml(ev) + "</span> " +
+        escapeHtml(dat).slice(0, 280) + (dat.length > 280 ? "…" : "");
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      if (typeof s !== "string") s = String(s);
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function ensureSlideSlots() {
+      while (slideState.length < SLIDE_COUNT) {
+        slideState.push({ creating: true });
+      }
+    }
+
+    function setSlide(index, slide, placeholderUrl, imageBase64) {
+      ensureSlideSlots();
+      const i = index - 1;
+      if (i < 0 || i >= SLIDE_COUNT) return;
+      const prev = slideState[i];
+      slideState[i] = {
+        creating: false,
+        slide: slide || null,
+        placeholderUrl: placeholderUrl || (prev && prev.placeholderUrl) || null,
+        imageBase64: imageBase64 !== undefined ? imageBase64 : (prev && prev.imageBase64),
+      };
+      renderSlideCard(i);
+    }
+
+    function setSlideImage(index, imageBase64) {
+      ensureSlideSlots();
+      const i = index - 1;
+      if (i < 0 || i >= slideState.length) return;
+      slideState[i].imageBase64 = imageBase64;
+      renderSlideCard(i);
+    }
+
+    function renderSlideCard(i) {
+      let el = document.getElementById("slide-" + i);
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "slide-" + i;
+        el.className = "slide-slot";
+        slidesEl.appendChild(el);
+      }
+      const s = slideState[i];
+      if (!s || s.creating) {
+        el.className = "slide-slot creating";
+        el.innerHTML =
+          "<div class=\"img-wrap\"><div class=\"placeholder\"></div><span>Слайд " + (i + 1) + " создаётся…</span></div>" +
+          "<div class=\"content\"><div class=\"title\">Агент " + (i + 1) + " работает</div><div class=\"body\">Ожидание контента</div></div>";
+        el.onclick = null;
+        return;
+      }
+      const slide = s.slide;
+      el.classList.remove("creating");
+      el.classList.add("ready");
+      const title = slide ? (slide.title || "") : "";
+      const body = slide && slide.body ? slide.body.join(" ") : "";
+      let imgSrc = "";
+      if (s.imageBase64) {
+        imgSrc = "<img src=\"data:image/png;base64," + s.imageBase64 + "\" alt=\"\" />";
+      } else if (s.placeholderUrl) {
+        imgSrc = "<img src=\"" + escapeHtml(s.placeholderUrl) + "\" alt=\"\" />";
+      } else {
+        imgSrc = "<div class=\"placeholder\"></div>";
+      }
+      el.innerHTML =
+        "<div class=\"img-wrap\">" + imgSrc + "</div>" +
+        "<div class=\"content\"><div class=\"title\">" + escapeHtml(title) + "</div><div class=\"body\">" + escapeHtml(body) + "</div></div>";
+      
+      el.onclick = () => openModal(i);
+    }
+
+    function renderAllSlides() {
+      ensureSlideSlots();
+      slidesEl.innerHTML = "";
+      for (let i = 0; i < SLIDE_COUNT; i++) {
+        const el = document.createElement("div");
+        el.id = "slide-" + i;
+        slidesEl.appendChild(el);
+        renderSlideCard(i);
+      }
+    }
+
+    function openModal(i) {
+      const s = slideState[i];
+      if (!s || !s.slide) return;
+      const title = s.slide.title || "";
+      const body = (s.slide.body || []).map(p => "<p>" + escapeHtml(p) + "</p>").join("");
+      let imgSrc = "";
+      if (s.imageBase64) {
+        imgSrc = "<img src=\"data:image/png;base64," + s.imageBase64 + "\" style=\"width:100%;height:100%;object-fit:cover;opacity:0.3;\" />";
+      } else if (s.placeholderUrl) {
+        imgSrc = "<img src=\"" + escapeHtml(s.placeholderUrl) + "\" style=\"width:100%;height:100%;object-fit:cover;opacity:0.3;\" />";
+      }
+      
+      modalBody.innerHTML = 
+        "<div style=\"position:absolute;inset:0;z-index:1;background:var(--bg);\">" + imgSrc + "</div>" +
+        "<div style=\"position:relative;z-index:2;padding:4rem;display:flex;flex-direction:column;justify-content:center;height:100%;text-shadow:0 2px 8px rgba(0,0,0,0.8);\">" +
+          "<h2 style=\"font-size:3rem;margin:0 0 1.5rem;color:#fff;line-height:1.2;\">" + escapeHtml(title) + "</h2>" +
+          "<div style=\"font-size:1.5rem;color:#e4e4e7;line-height:1.5;\">" + body + "</div>" +
+        "</div>";
+      modalEl.classList.add("open");
+    }
+
+    modalClose.onclick = () => modalEl.classList.remove("open");
+    modalEl.onclick = (e) => { if (e.target === modalEl) modalEl.classList.remove("open"); };
+
+    runBtn.addEventListener("click", async () => {
+      const topic = topicEl.value.trim() || "Презентация";
+      runBtn.disabled = true;
+      logEl.innerHTML = "";
+      slideState = [];
+      setStatus("running", "Запуск 5 агентов. Слайды появятся по мере готовности.");
+      renderAllSlides();
+
+      try {
+        const res = await fetch("/api/slides", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic }),
+        });
+        if (!res.ok || !res.body) {
+          setStatus("error", "Ошибка: " + res.status);
+          runBtn.disabled = false;
+          return;
+        }
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          const lines = buf.split("\n\n");
+          buf = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const msg = JSON.parse(line.slice(6));
+              if (msg.type === "log") addLog(msg);
+              else if (msg.type === "slide") {
+                setSlide(msg.index, msg.slide, msg.placeholderUrl, null);
+              } else if (msg.type === "slideImage") {
+                setSlideImage(msg.index, msg.imageBase64);
+              }               else if (msg.type === "done") {
+                setStatus("done", "Готово. Все слайды созданы.");
+                var list = msg.slides || [];
+                for (var i = 0; i < SLIDE_COUNT; i++) {
+                  var s = list[i];
+                  var ph = (slideState[i] && slideState[i].placeholderUrl) || ("https://picsum.photos/seed/" + encodeURIComponent(topic) + (i + 1) + "/800/450");
+                  setSlide(i + 1, s || null, ph, slideState[i] && slideState[i].imageBase64);
+                }
+              } else if (msg.type === "error") {
+                setStatus("error", msg.message || "Ошибка");
+                addLog({ agent: "error", data: msg.message });
+              }
+            } catch (_) {}
+          }
+        }
+        if (buf.trim()) {
+          var rest = buf.split("\n\n");
+          for (var r = 0; r < rest.length; r++) {
+            var line = rest[r].trim();
+            if (!line.startsWith("data: ")) continue;
+            try {
+              var msg = JSON.parse(line.slice(6));
+              if (msg.type === "log") addLog(msg);
+              else if (msg.type === "slide") setSlide(msg.index, msg.slide, msg.placeholderUrl, null);
+              else if (msg.type === "slideImage") setSlideImage(msg.index, msg.imageBase64);
+              else if (msg.type === "done") {
+                setStatus("done", "Готово. Все слайды созданы.");
+                var list = msg.slides || [];
+                for (var i = 0; i < SLIDE_COUNT; i++) {
+                  var s = list[i];
+                  var ph = (slideState[i] && slideState[i].placeholderUrl) || ("https://picsum.photos/seed/" + encodeURIComponent(topic) + (i + 1) + "/800/450");
+                  setSlide(i + 1, s || null, ph, slideState[i] && slideState[i].imageBase64);
+                }
+              } else if (msg.type === "error") setStatus("error", msg.message);
+            } catch (e) { console.warn("SSE parse:", e); }
+          }
+        }
+      } catch (e) {
+        setStatus("error", e.message || "Ошибка сети");
+        addLog({ agent: "error", data: String(e) });
+      }
+      runBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>

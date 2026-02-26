@@ -1,0 +1,22 @@
+{
+  "name": "vanilla-react-agent",
+  "version": "1.0.0",
+  "description": "Autonomous ReAct AI agent on Node.js + Gemini API (no frameworks)",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "slides": "tsx src/index.ts slides",
+    "ui": "tsx src/server.ts"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
