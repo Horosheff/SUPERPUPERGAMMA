@@ -47,12 +47,26 @@ Autonomous AI agent on **pure Node.js + TypeScript**: no Vercel SDK, Langchain, 
    npm run dev -- slides "Introduction to AI"
    ```
 
+   Web UI (slides + single agent):
+
+   ```bash
+   npm run ui
+   ```
+
+   Then open `http://localhost:3780` (or `PORT`).
+
    Or with `tsx` directly:
 
    ```bash
    npx tsx src/index.ts "your question"
    npx tsx src/index.ts slides "Presentation topic"
    ```
+
+## Environment variables
+
+- `GEMINI_API_KEY` (**required**): Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
+- `GEMINI_MODEL` (optional): model name (default: `gemini-2.5-flash`)
+- `PORT` (optional): web server port for `npm run ui` (default: `3780`)
 
 ## Project structure
 
