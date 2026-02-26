@@ -70,7 +70,7 @@ async function main() {
   }
 
   const apiKey = getApiKey();
-  const model = "gemini-2.5-flash";
+  const model = (process.env.GEMINI_MODEL ?? "").trim() || "gemini-2.5-flash";
 
   if (args[0] === "slides") {
     const topic = args[1] ?? "Introduction to AI";

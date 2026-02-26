@@ -10,6 +10,8 @@ export interface SlideOrchestratorOptions {
   debugLog?: (event: string, data: unknown) => void;
   /** Called when an agent writes a slide (for real-time UI + image generation). */
   onSlideWritten?: (index: number, slide: Slide) => void;
+  /** Optional AbortSignal to cancel agents. */
+  abortSignal?: AbortSignal;
 }
 
 /**
@@ -21,6 +23,7 @@ export class SlideOrchestrator {
   private readonly topic: string;
   private readonly debugLog: (event: string, data: unknown) => void;
   private readonly onSlideWritten?: (index: number, slide: Slide) => void;
+  private readonly abortSignal?: AbortSignal;
 
   constructor(options: SlideOrchestratorOptions) {
     this.apiKey = options.apiKey;
@@ -28,6 +31,7 @@ export class SlideOrchestrator {
     this.topic = options.topic;
     this.debugLog = options.debugLog ?? (() => {});
     this.onSlideWritten = options.onSlideWritten;
+    this.abortSignal = options.abortSignal;
   }
 
   /**
@@ -40,6 +44,7 @@ export class SlideOrchestrator {
     );
 
     this.debugLog("orchestrator_start", { topic: this.topic, agents: SLIDE_COUNT });
+    if (this.abortSignal?.aborted) return blackboard;
 
     const agents = Array.from({ length: SLIDE_COUNT }, (_, i) => {
       const tools = createSlideTools(
@@ -68,8 +73,16 @@ export class SlideOrchestrator {
 
     const results = await Promise.all(
       agents.map((agent, i) => {
+        if (this.abortSignal?.aborted) {
+          return Promise.resolve({
+            result: "Cancelled",
+            history: [],
+            steps: 0,
+            finished: false,
+          });
+        }
         this.debugLog("agent_start", { agent: i + 1 });
-        return agent.run(userPrompts[i]);
+        return agent.run(userPrompts[i], this.abortSignal);
       })
     );
 

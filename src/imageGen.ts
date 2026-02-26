@@ -18,7 +18,8 @@ export interface SlideForImage {
 export async function generateSlideImage(
   apiKey: string,
   slide: SlideForImage,
-  slideIndex: number
+  slideIndex: number,
+  abortSignal?: AbortSignal
 ): Promise<string | null> {
   const prompt = `A highly detailed, realistic, and professional background image for a presentation slide. Theme: ${slide.title}. Context: ${(slide.body?.[0] ?? "").slice(0, 80)}. Do NOT include any text or words in the image. High quality, 16:9 aspect ratio.`;
   const model = "gemini-3.1-flash-image-preview";
@@ -32,6 +33,7 @@ export async function generateSlideImage(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: abortSignal,
     });
     if (!res.ok) return null;
     const data = (await res.json()) as {
@@ -44,6 +46,7 @@ export async function generateSlideImage(
       if (part.inlineData?.data) return part.inlineData.data;
     }
   } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") return null;
     console.error("Image gen error:", err);
   }
   return null;

@@ -42,4 +42,6 @@ export interface VanillaAgentOptions {
   systemPrompt?: string;
   maxSteps?: number;
   debugLog?: (event: string, data: unknown) => void;
+  /** Optional AbortSignal to cancel in-flight Gemini requests. */
+  abortSignal?: AbortSignal;
 }

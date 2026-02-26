@@ -74,6 +74,17 @@
     }
     .form button:hover { background: var(--accent-hover); }
     .form button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .form textarea {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1rem;
+      min-height: 44px;
+      resize: vertical;
+    }
     .layout {
       display: grid;
       grid-template-columns: 340px 1fr;
@@ -274,6 +285,15 @@
       <input type="text" id="topic" placeholder="Тема презентации (например: Введение в ИИ)" />
       <button type="button" id="run">Создать слайды</button>
     </div>
+    <div id="agent-status" class="status idle">Одиночный агент: задайте вопрос и получите ответ.</div>
+    <div class="form">
+      <input type="text" id="agent-message" placeholder="Вопрос агенту (например: Что такое ReAct?)" />
+      <button type="button" id="agent-run">Спросить</button>
+    </div>
+    <div class="panel" style="min-height: 140px;">
+      <h2>Ответ одиночного агента</h2>
+      <div id="agent-out" class="log" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;"></div>
+    </div>
     <div class="layout">
       <div class="panel">
         <h2>Ход работы</h2>
@@ -302,6 +322,10 @@
     const modalEl = document.getElementById("modal");
     const modalBody = document.getElementById("modal-body");
     const modalClose = document.getElementById("modal-close");
+    const agentStatusEl = document.getElementById("agent-status");
+    const agentMessageEl = document.getElementById("agent-message");
+    const agentRunBtn = document.getElementById("agent-run");
+    const agentOutEl = document.getElementById("agent-out");
 
     const SLIDE_COUNT = 5;
     let slideState = [];
@@ -309,6 +333,11 @@
     function setStatus(klass, text) {
       statusEl.className = "status " + klass;
       statusEl.textContent = text;
+    }
+
+    function setAgentStatus(klass, text) {
+      agentStatusEl.className = "status " + klass;
+      agentStatusEl.textContent = text;
     }
 
     function addLog(entry) {
@@ -511,6 +540,33 @@
         addLog({ agent: "error", data: String(e) });
       }
       runBtn.disabled = false;
+    });
+
+    agentRunBtn.addEventListener("click", async () => {
+      const message = agentMessageEl.value.trim();
+      if (!message) return;
+      agentRunBtn.disabled = true;
+      agentOutEl.textContent = "";
+      setAgentStatus("running", "Запрос отправлен. Ожидаем ответ...");
+      try {
+        const res = await fetch("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          setAgentStatus("error", data.error || ("Ошибка: " + res.status));
+          agentOutEl.textContent = data.error || ("Ошибка: " + res.status);
+        } else {
+          setAgentStatus("done", `Готово. Шагов: ${data.steps}, finished: ${data.finished}`);
+          agentOutEl.textContent = String(data.result || "");
+        }
+      } catch (e) {
+        setAgentStatus("error", e.message || "Ошибка сети");
+        agentOutEl.textContent = String(e);
+      }
+      agentRunBtn.disabled = false;
     });
   </script>
 </body>

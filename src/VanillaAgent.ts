@@ -29,6 +29,7 @@ export class VanillaAgent {
   private readonly systemPrompt: string;
   private readonly maxSteps: number;
   private readonly debugLog: (event: string, data: unknown) => void;
+  private readonly abortSignal?: AbortSignal;
 
   constructor(options: VanillaAgentOptions) {
     this.apiKey = options.apiKey;
@@ -38,6 +39,40 @@ export class VanillaAgent {
       options.systemPrompt ?? this.getDefaultSystemPrompt();
     this.maxSteps = options.maxSteps ?? 20;
     this.debugLog = options.debugLog ?? (() => {});
+    this.abortSignal = options.abortSignal;
+  }
+
+  private extractFirstJsonObject(text: string): string | null {
+    const start = text.indexOf("{");
+    if (start === -1) return null;
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (inString) {
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (ch === "\\") {
+          escape = true;
+          continue;
+        }
+        if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') {
+        inString = true;
+        continue;
+      }
+      if (ch === "{") depth++;
+      if (ch === "}") {
+        depth--;
+        if (depth === 0) return text.slice(start, i + 1);
+      }
+    }
+    return null;
   }
 
   private getDefaultSystemPrompt(): string {
@@ -52,7 +87,10 @@ Always output valid JSON only.`;
   /**
    * Call Gemini generateContent (REST).
    */
-  private async callGemini(contents: GeminiContent[]): Promise<string> {
+  private async callGemini(
+    contents: GeminiContent[],
+    abortSignal?: AbortSignal
+  ): Promise<string> {
     const url = `${GEMINI_BASE}/models/${this.model}:generateContent?key=${this.apiKey}`;
     const body: {
       systemInstruction?: { parts: Array<{ text: string }> };
@@ -64,11 +102,21 @@ Always output valid JSON only.`;
 
     this.debugLog("request", { contentsCount: contents.length });
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const signal = abortSignal ?? this.abortSignal;
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal,
+      });
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new Error("Request cancelled");
+      }
+      throw err;
+    }
 
     if (!res.ok) {
       const errText = await res.text();
@@ -95,14 +143,29 @@ Always output valid JSON only.`;
    * Parse model output as AgentResponse. Returns null on parse error.
    */
   private parseResponse(raw: string): AgentResponse | null {
-    const trimmed = raw.replace(/^```json\s*/i, "").replace(/\s*```\s*$/i, "").trim();
-    try {
-      const parsed = JSON.parse(trimmed) as unknown;
-      if (!isAgentResponse(parsed)) return null;
-      return parsed;
-    } catch {
-      return null;
+    const trimmed = raw
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
+
+    const candidates = [
+      trimmed,
+      this.extractFirstJsonObject(trimmed),
+      this.extractFirstJsonObject(raw),
+    ].filter((x): x is string => typeof x === "string" && x.trim().length > 0);
+
+    for (const candidate of candidates) {
+      try {
+        const parsed = JSON.parse(candidate) as unknown;
+        if (!isAgentResponse(parsed)) continue;
+        return parsed;
+      } catch {
+        continue;
+      }
     }
+
+    return null;
   }
 
   /**
@@ -130,7 +193,7 @@ Always output valid JSON only.`;
   /**
    * ReAct loop: send messages -> parse JSON -> execute tool or FINISH.
    */
-  async run(userMessage: string): Promise<RunResult> {
+  async run(userMessage: string, abortSignal?: AbortSignal): Promise<RunResult> {
     const history: GeminiContent[] = [
       { role: "user", parts: [{ text: userMessage }] },
     ];
@@ -138,10 +201,20 @@ Always output valid JSON only.`;
     let lastThought = "";
 
     while (steps < this.maxSteps) {
+      const signal = abortSignal ?? this.abortSignal;
+      if (signal?.aborted) {
+        this.debugLog("aborted", { steps });
+        return {
+          result: lastThought || "Cancelled",
+          history,
+          steps,
+          finished: false,
+        };
+      }
       steps++;
       this.debugLog("step", { step: steps });
 
-      const raw = await this.callGemini(history);
+      const raw = await this.callGemini(history, abortSignal);
       const parsed = this.parseResponse(raw);
 
       if (!parsed) {
