@@ -234,10 +234,10 @@ function addLog(e){
 
 /* State helpers */
 function ensure(){while(state.length<N)state.push({phase:'creating'})}
-function setSlide(idx,slide,ph){
+function setSlide(idx,slide){
   ensure();const i=idx-1;if(i<0||i>=N)return;
   const p=state[i];
-  state[i]={...p,phase:p.phase==='creating'?'content':p.phase,slide:slide||null,placeholderUrl:ph||(p&&p.placeholderUrl)||null};
+  state[i]={...p,phase:p.phase==='creating'?'content':p.phase,slide:slide||null};
   render(i);
 }
 function setDesign(idx,design){
@@ -294,14 +294,12 @@ function render(i){
 
   el.className='card ready'+(designed?'':' designing');
 
-  // Image
+  // Image: AI-generated or gradient+icon placeholder (no random stock photos)
   let imgH='';
   if(s.imageBase64){
     imgH='<img class="card-img" src="data:image/png;base64,'+s.imageBase64+'" alt="" />';
-  } else if(s.placeholderUrl){
-    imgH='<img class="card-img" src="'+esc(s.placeholderUrl)+'" alt="" />';
   } else {
-    imgH='<div class="card-img-placeholder">'+ic+'</div>';
+    imgH='<div class="card-img-placeholder" style="background:'+g+'">'+ic+'</div>';
   }
 
   // Bullets
@@ -347,7 +345,7 @@ function renderModal(i){
 
   let imgH='';
   if(s.imageBase64) imgH='<img class="m-img" src="data:image/png;base64,'+s.imageBase64+'" alt="" />';
-  else if(s.placeholderUrl) imgH='<img class="m-img" src="'+esc(s.placeholderUrl)+'" alt="" />';
+  else imgH='<div style="width:100%;height:280px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:'+g+'">'+ic+'</div>';
 
   let bullH='';
   (slide.body||[]).forEach(function(line,j){
@@ -411,7 +409,7 @@ runBtn.addEventListener('click',async function(){
           addLog(m);
           if(!designSeen&&m.event&&String(m.event).includes('DesignAgent')){designSeen=true;setStatus('design','Фаза 2: Дизайн-агент стилизует слайды…',true)}
         }
-        else if(m.type==='slide') setSlide(m.index,m.slide,m.placeholderUrl);
+        else if(m.type==='slide') setSlide(m.index,m.slide);
         else if(m.type==='design') setDesign(m.index,m.design);
         else if(m.type==='slideImage'){
           if(!imgSeen){imgSeen=true;setStatus('images','Фаза 3: Генерация изображений…',true)}
@@ -421,8 +419,7 @@ runBtn.addEventListener('click',async function(){
           setStatus('done','Готово! '+N+' слайдов с дизайном и изображениями.');
           const list=m.slides||[], designs=m.designs||[];
           for(let i=0;i<N;i++){
-            const s=list[i],ph=(state[i]&&state[i].placeholderUrl)||('https://picsum.photos/seed/'+encodeURIComponent(topic)+(i+1)+'/800/450');
-            setSlide(i+1,s||null,ph);
+            setSlide(i+1,list[i]||null);
             if(designs[i])setDesign(i+1,designs[i]);
           }
         }

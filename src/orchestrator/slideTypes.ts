@@ -20,6 +20,7 @@ export interface SlideDesign {
   darkText: boolean;
   highlightLines: number[];
   tagline?: string;
+  imagePrompt?: string;
 }
 
 /**

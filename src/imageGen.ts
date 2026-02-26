@@ -1,6 +1,7 @@
 /**
- * Image for slides: try Gemini image model; fallback to placeholder URL.
- * Supports custom image prompts from the Design Agent.
+ * Image generation for slides via Gemini Nano Banana.
+ * Uses Design-Agent-crafted prompts for theme-accurate images.
+ * No more random picsum.photos — fallback is gradient + icon on the frontend.
  */
 
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
@@ -12,9 +13,8 @@ export interface SlideForImage {
 }
 
 /**
- * Generate an image using a Design-Agent-crafted prompt, or fall back to a
- * generic prompt built from the slide content.
- * Returns base64 PNG or null.
+ * Generate an image using the Design Agent's prompt (or a fallback prompt
+ * built from slide content). Returns base64 image data or null.
  */
 export async function generateSlideImage(
   apiKey: string,
@@ -24,13 +24,15 @@ export async function generateSlideImage(
 ): Promise<string | null> {
   const prompt =
     customPrompt ??
-    `A highly detailed, realistic, and professional background image for a presentation slide. Theme: ${slide.title}. Context: ${(slide.body?.[0] ?? "").slice(0, 80)}. Do NOT include any text or words in the image. High quality, 16:9 aspect ratio.`;
+    buildDefaultPrompt(slide);
 
-  const model = "gemini-2.0-flash-exp";
+  const model = "gemini-2.0-flash-exp-image-generation";
   const url = `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`;
   const body = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+    generationConfig: {
+      responseModalities: ["TEXT", "IMAGE"],
+    },
   };
 
   try {
@@ -39,14 +41,24 @@ export async function generateSlideImage(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!res.ok) return null;
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.error(`Image gen HTTP ${res.status} for slide ${slideIndex}:`, errText.slice(0, 200));
+      return null;
+    }
+
     const data = (await res.json()) as {
       candidates?: Array<{
         content?: {
-          parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }>;
+          parts?: Array<{
+            text?: string;
+            inlineData?: { mimeType?: string; data?: string };
+          }>;
         };
       }>;
     };
+
     const parts = data.candidates?.[0]?.content?.parts ?? [];
     for (const part of parts) {
       if (part.inlineData?.data) return part.inlineData.data;
@@ -57,8 +69,7 @@ export async function generateSlideImage(
   return null;
 }
 
-/** Placeholder image URL per slide (deterministic from index). */
-export function placeholderImageUrl(slideIndex: number, topic: string): string {
-  const seed = encodeURIComponent(topic.slice(0, 20)) + slideIndex;
-  return `https://picsum.photos/seed/${seed}/800/450`;
+function buildDefaultPrompt(slide: SlideForImage): string {
+  const context = slide.body.slice(0, 2).join(". ").slice(0, 120);
+  return `Create a visually stunning, modern illustration for a presentation slide about "${slide.title}". ${context ? `Context: ${context}.` : ""} Style: ultra-modern, clean, professional, dark background with vibrant accent colors, abstract geometric shapes and glowing elements. Do NOT include any text, words, or letters in the image. 16:9 aspect ratio, high quality.`;
 }

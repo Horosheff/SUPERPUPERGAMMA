@@ -8,7 +8,7 @@ import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlideOrchestrator } from "./orchestrator/SlideOrchestrator.js";
 import type { Slide, SlideDesign } from "./orchestrator/slideTypes.js";
-import { generateSlideImage, placeholderImageUrl } from "./imageGen.js";
+import { generateSlideImage } from "./imageGen.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..", "public");
@@ -88,12 +88,7 @@ async function handlePostSlides(req: IncomingMessage, res: ServerResponse): Prom
 
       onSlideWritten(index, slide) {
         slideContents[index] = slide;
-        send({
-          type: "slide",
-          index,
-          slide,
-          placeholderUrl: placeholderImageUrl(index, topic),
-        });
+        send({ type: "slide", index, slide });
       },
 
       onDesignWritten(index, design) {
@@ -103,12 +98,13 @@ async function handlePostSlides(req: IncomingMessage, res: ServerResponse): Prom
         const slide = slideContents[index];
         if (!slide) return;
 
-        const imagePrompt = (design as unknown as Record<string, unknown>).imagePrompt as string | undefined;
-        generateSlideImage(apiKey, slide, index, imagePrompt)
+        generateSlideImage(apiKey, slide, index, design.imagePrompt)
           .then((imageBase64) => {
             if (imageBase64) send({ type: "slideImage", index, imageBase64 });
           })
-          .catch(() => {});
+          .catch((err) => {
+            console.error("Image gen failed for slide", index, err);
+          });
       },
     });
 
