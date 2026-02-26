@@ -1,5 +1,5 @@
 /**
- * Web UI server: static files + POST /api/slides (SSE stream of log + slides).
+ * Web UI server: static files + POST /api/slides (SSE stream of log + slides + designs + images).
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -7,7 +7,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SlideOrchestrator } from "./orchestrator/SlideOrchestrator.js";
-import type { Slide } from "./orchestrator/slideTypes.js";
+import type { Slide, SlideDesign } from "./orchestrator/slideTypes.js";
 import { generateSlideImage, placeholderImageUrl } from "./imageGen.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -38,11 +38,8 @@ function parseBody(req: IncomingMessage): Promise<{ topic?: string }> {
     let buf = "";
     req.on("data", (ch) => { buf += ch; });
     req.on("end", () => {
-      try {
-        resolve(buf ? JSON.parse(buf) : {});
-      } catch {
-        resolve({});
-      }
+      try { resolve(buf ? JSON.parse(buf) : {}); }
+      catch { resolve({}); }
     });
     req.on("error", reject);
   });
@@ -79,33 +76,67 @@ async function handlePostSlides(req: IncomingMessage, res: ServerResponse): Prom
 
   const send = (obj: object) => sendSSE(res, obj);
 
+  const slideDesigns: Record<number, SlideDesign> = {};
+  const slideContents: Record<number, Slide> = {};
+
   try {
     const orchestrator = new SlideOrchestrator({
       apiKey,
       model,
       topic,
       debugLog: (event, data) => send({ type: "log", event, data }),
+
       onSlideWritten(index, slide) {
+        slideContents[index] = slide;
         send({
           type: "slide",
           index,
           slide,
           placeholderUrl: placeholderImageUrl(index, topic),
         });
-        generateSlideImage(apiKey, slide, index)
+      },
+
+      onDesignWritten(index, design) {
+        slideDesigns[index] = design;
+        send({ type: "design", index, design });
+
+        const slide = slideContents[index];
+        if (!slide) return;
+
+        const imagePrompt = (design as unknown as Record<string, unknown>).imagePrompt as string | undefined;
+        generateSlideImage(apiKey, slide, index, imagePrompt)
           .then((imageBase64) => {
             if (imageBase64) send({ type: "slideImage", index, imageBase64 });
           })
           .catch(() => {});
       },
     });
-    const slides = await orchestrator.run();
-    send({ type: "done", slides: slides as (Slide | null)[] });
-  } catch (err) {
+
+    const result = await orchestrator.run();
+
+    // If some designs arrived but images haven't been triggered (no imagePrompt),
+    // fall back to generating images for slides that still have no image.
+    const imagePromises: Promise<void>[] = [];
+    for (let i = 0; i < result.slides.length; i++) {
+      const slide = result.slides[i];
+      if (!slide) continue;
+      if (!slideDesigns[i + 1]) {
+        imagePromises.push(
+          generateSlideImage(apiKey, slide, i + 1)
+            .then((img) => { if (img) send({ type: "slideImage", index: i + 1, imageBase64: img }); })
+            .catch(() => {}),
+        );
+      }
+    }
+    if (imagePromises.length > 0) await Promise.all(imagePromises);
+
     send({
-      type: "error",
-      message: err instanceof Error ? err.message : String(err),
+      type: "done",
+      slides: result.slides as (Slide | null)[],
+      designs: result.designs as (SlideDesign | null)[],
     });
+  } catch (err) {
+    send({ type: "error", message: err instanceof Error ? err.message : String(err) });
   } finally {
     res.end();
   }

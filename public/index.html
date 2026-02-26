@@ -3,905 +3,435 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Слайды — 5 агентов</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Slides — AI Agents</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0f;
-      --surface: #12121a;
-      --card: #1a1a24;
-      --card-hover: #20202c;
-      --border: #2a2a38;
-      --border-light: #35354a;
-      --text: #f0f0f6;
-      --text-secondary: #c0c0d0;
-      --muted: #7878a0;
+      --bg: #08080c;
+      --surface: #101016;
+      --card: #16161e;
+      --border: #222230;
+      --border-l: #2e2e40;
+      --text: #eeeef4;
+      --text2: #b8b8d0;
+      --muted: #6e6e90;
       --accent: #7c5cfc;
-      --accent-light: #9b82fc;
-      --accent-bg: rgba(124,92,252,0.08);
-      --accent-border: rgba(124,92,252,0.25);
-      --success: #34d399;
-      --success-bg: rgba(52,211,153,0.1);
-      --error: #f87171;
-      --error-bg: rgba(248,113,113,0.1);
-      --blue: #60a5fa;
-      --slide-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --slide-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --slide-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      --slide-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-      --slide-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-      --slide-accent-1: #667eea;
-      --slide-accent-2: #f5576c;
-      --slide-accent-3: #4facfe;
-      --slide-accent-4: #43e97b;
-      --slide-accent-5: #fa709a;
-      --radius: 16px;
-      --radius-sm: 10px;
-      --shadow-card: 0 4px 24px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2);
-      --shadow-card-hover: 0 12px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
-      --shadow-modal: 0 25px 80px rgba(0,0,0,0.6);
+      --accent2: #a78bfa;
+      --radius: 20px;
+      --radius-s: 12px;
     }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Header */
+    header{padding:1rem 2rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem}
+    .logo{width:34px;height:34px;background:linear-gradient(135deg,#7c5cfc,#f97316);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff}
+    header h1{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
+    header h1 span{color:var(--muted);font-weight:400;margin-left:.35rem}
 
-    body {
-      font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      -webkit-font-smoothing: antialiased;
-    }
+    /* Main */
+    main{flex:1;display:flex;flex-direction:column;max-width:1500px;width:100%;margin:0 auto;padding:1.25rem 2rem 2rem;gap:1rem}
 
-    /* ─── Header ─── */
-    header {
-      padding: 1.25rem 2rem;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: var(--slide-1);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #fff;
-      flex-shrink: 0;
-    }
-    header h1 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
-    header h1 span { color: var(--muted); font-weight: 400; }
+    /* Status */
+    .status{padding:.6rem 1.15rem;border-radius:var(--radius-s);font-size:.88rem;font-weight:500;display:flex;align-items:center;gap:.55rem;transition:.3s}
+    .status.idle{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+    .status.running{background:rgba(124,92,252,.08);color:var(--accent2);border:1px solid rgba(124,92,252,.2)}
+    .status.design{background:rgba(249,115,22,.08);color:#fb923c;border:1px solid rgba(249,115,22,.2)}
+    .status.images{background:rgba(56,189,248,.08);color:#38bdf8;border:1px solid rgba(56,189,248,.2)}
+    .status.done{background:rgba(52,211,153,.08);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+    .status.error{background:rgba(248,113,113,.08);color:#f87171;border:1px solid rgba(248,113,113,.2)}
+    .spinner{width:15px;height:15px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+    @keyframes sp{to{transform:rotate(360deg)}}
 
-    /* ─── Main ─── */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      max-width: 1440px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 1.5rem 2rem 2rem;
-      gap: 1.25rem;
-    }
+    /* Form */
+    .form-row{display:flex;gap:.7rem}
+    .form-row input{flex:1;padding:.8rem 1.2rem;border:1px solid var(--border);border-radius:var(--radius-s);background:var(--surface);color:var(--text);font-size:.95rem;font-family:inherit;transition:.2s}
+    .form-row input::placeholder{color:var(--muted)}
+    .form-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,.12)}
+    .form-row button{padding:.8rem 1.8rem;border:none;border-radius:var(--radius-s);background:linear-gradient(135deg,#7c5cfc,#a855f7);color:#fff;font-size:.92rem;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;transition:.2s}
+    .form-row button:hover{box-shadow:0 4px 20px rgba(124,92,252,.4);transform:translateY(-1px)}
+    .form-row button:active{transform:scale(.97)}
+    .form-row button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
-    /* ─── Status ─── */
-    .status-bar {
-      padding: 0.65rem 1.25rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      transition: all 0.3s;
-    }
-    .status-bar.idle { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
-    .status-bar.running { background: var(--accent-bg); color: var(--accent-light); border: 1px solid var(--accent-border); }
-    .status-bar.done { background: var(--success-bg); color: var(--success); border: 1px solid rgba(52,211,153,0.25); }
-    .status-bar.error { background: var(--error-bg); color: var(--error); border: 1px solid rgba(248,113,113,0.25); }
-    .status-bar .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid transparent;
-      border-top-color: var(--accent-light);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .status-bar .check { font-size: 1.1rem; }
+    /* Workspace */
+    .workspace{flex:1;display:flex;gap:1rem;min-height:0}
 
-    /* ─── Form ─── */
-    .form-row {
-      display: flex;
-      gap: 0.75rem;
-    }
-    .form-row input {
-      flex: 1;
-      padding: 0.85rem 1.25rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 1rem;
-      font-family: inherit;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .form-row input::placeholder { color: var(--muted); }
-    .form-row input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(124,92,252,0.15);
-    }
-    .form-row button {
-      padding: 0.85rem 2rem;
-      border: none;
-      border-radius: var(--radius-sm);
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-    }
-    .form-row button:hover {
-      background: var(--accent-light);
-      box-shadow: 0 4px 16px rgba(124,92,252,0.35);
-    }
-    .form-row button:active { transform: scale(0.97); }
-    .form-row button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    /* Log */
+    .log-panel{width:300px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden}
+    .log-panel.collapsed{width:44px}
+    .log-hdr{display:flex;align-items:center;justify-content:space-between;padding:.65rem .85rem;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+    .log-hdr h2{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .log-arr{color:var(--muted);font-size:.8rem;transition:.2s}
+    .log-panel.collapsed .log-arr{transform:rotate(180deg)}
+    .log-panel.collapsed .log-hdr h2{display:none}
+    .log-body{flex:1;overflow:auto;padding:.5rem .7rem;font-family:"JetBrains Mono",monospace;font-size:.65rem;line-height:1.5}
+    .log-panel.collapsed .log-body{display:none}
+    .ll{padding:.1rem 0;white-space:pre-wrap;word-break:break-all;color:var(--muted)}
+    .ll .t{color:var(--accent2);font-weight:600}
+    .ll .e{color:#60a5fa}
 
-    /* ─── Layout ─── */
-    .workspace {
-      flex: 1;
-      display: flex;
-      gap: 1.25rem;
-      min-height: 0;
-    }
-
-    /* ─── Log Panel ─── */
-    .log-panel {
-      width: 320px;
-      flex-shrink: 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: width 0.3s;
-    }
-    .log-panel.collapsed { width: 48px; }
-    .log-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      user-select: none;
-    }
-    .log-header h2 {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-    }
-    .log-toggle {
-      width: 24px; height: 24px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--muted);
-      font-size: 0.85rem;
-      transition: transform 0.2s;
-    }
-    .log-panel.collapsed .log-toggle { transform: rotate(180deg); }
-    .log-panel.collapsed .log-header h2 { display: none; }
-    .log-body {
-      flex: 1;
-      overflow: auto;
-      padding: 0.6rem 0.8rem;
-      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
-      font-size: 0.7rem;
-      line-height: 1.5;
-    }
-    .log-panel.collapsed .log-body { display: none; }
-    .log-line {
-      padding: 0.15rem 0;
-      white-space: pre-wrap;
-      word-break: break-all;
-      color: var(--muted);
-    }
-    .log-line .tag {
-      color: var(--accent-light);
-      font-weight: 600;
-    }
-    .log-line .ev { color: var(--blue); }
-
-    /* ─── Slides Grid ─── */
-    .slides-panel {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .slides-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 1.25rem;
-      align-content: start;
-    }
+    /* Slides */
+    .slides-panel{flex:1;min-width:0;overflow:auto}
+    .slides-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:1.5rem;align-content:start;padding-bottom:2rem}
 
     /* ─── Slide Card ─── */
-    .slide-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-      box-shadow: var(--shadow-card);
-      cursor: default;
-      position: relative;
-    }
-    .slide-card.ready {
-      cursor: pointer;
-    }
-    .slide-card.ready:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-card-hover);
-      border-color: var(--border-light);
-    }
+    .card{border-radius:var(--radius);overflow:hidden;transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s;box-shadow:0 4px 24px rgba(0,0,0,.35);position:relative;cursor:default}
+    .card.ready{cursor:pointer}
+    .card.ready:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 16px 48px rgba(0,0,0,.55)}
 
-    .slide-card .accent-bar {
-      height: 4px;
-      width: 100%;
-    }
+    /* Gradient top bar */
+    .card .bar{height:5px;width:100%}
 
-    .slide-card .card-inner {
-      padding: 2rem 2rem 1.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      min-height: 220px;
-    }
+    /* Image section */
+    .card .card-img{width:100%;height:200px;object-fit:cover;display:block;background:linear-gradient(135deg,#1a1a2e,#16213e)}
+    .card .card-img-placeholder{width:100%;height:200px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,#1a1a2e,#16213e)}
 
-    .slide-card .slide-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #fff;
-      flex-shrink: 0;
-    }
+    /* Content */
+    .card .card-content{padding:1.75rem 2rem 1.5rem;display:flex;flex-direction:column;gap:.85rem;background:var(--card)}
 
-    .slide-card .card-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      line-height: 1.3;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
+    /* Badge */
+    .card .badge{display:inline-flex;align-items:center;gap:.45rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:.3rem .7rem;border-radius:6px;width:fit-content}
 
-    .slide-card .card-body {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      flex: 1;
-    }
+    /* Title */
+    .card .card-title{font-size:1.4rem;font-weight:800;line-height:1.25;letter-spacing:-.015em;color:#fff}
+    .card .card-tagline{font-size:.85rem;font-weight:500;color:var(--text2);margin-top:-.25rem}
 
-    .slide-card .card-body .bullet {
-      display: flex;
-      gap: 0.65rem;
-      align-items: flex-start;
-      font-size: 0.92rem;
-      line-height: 1.55;
-      color: var(--text-secondary);
-    }
+    /* Bullets */
+    .card .card-bullets{display:flex;flex-direction:column;gap:.45rem;margin-top:.25rem}
+    .card .bul{display:flex;gap:.6rem;align-items:flex-start;font-size:.88rem;line-height:1.55;color:var(--text2);padding:.25rem .5rem;border-radius:8px;transition:background .2s}
+    .card .bul.hl{background:rgba(255,255,255,.04);color:var(--text)}
+    .card .bul .bd{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:.45em}
 
-    .slide-card .card-body .bullet .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 0.5em;
-    }
+    /* Notes */
+    .card .card-notes{padding-top:.65rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);font-style:italic;line-height:1.5}
 
-    .slide-card .card-notes {
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--border);
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-style: italic;
-      line-height: 1.5;
-    }
+    /* Creating state */
+    .card.creating{background:var(--card);min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center}
+    .card.creating .card-title{color:var(--muted);font-size:1rem;font-weight:500}
+    .pulse-ring{width:48px;height:48px;border-radius:50%;position:relative}
+    .pulse-ring::before,.pulse-ring::after{content:'';position:absolute;inset:0;border-radius:50%;animation:pr 1.6s ease-out infinite}
+    .pulse-ring::after{animation-delay:.35s}
+    @keyframes pr{0%{transform:scale(.4);opacity:.9}100%{transform:scale(2);opacity:0}}
 
-    .slide-card .card-image {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-top: 1px solid var(--border);
-      background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
-    }
+    /* Designing state */
+    .card.designing{outline:2px dashed rgba(249,115,22,.35);outline-offset:-2px}
+    .card.designing::after{content:'🎨 Дизайн…';position:absolute;top:.75rem;right:.75rem;font-size:.7rem;font-weight:600;background:rgba(249,115,22,.15);color:#fb923c;padding:.25rem .55rem;border-radius:6px}
 
-    /* ─── Creating State ─── */
-    .slide-card.creating .card-inner {
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    .slide-card.creating .card-title {
-      color: var(--muted);
-      font-size: 1rem;
-      font-weight: 500;
-    }
-    .creating-pulse {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      position: relative;
-    }
-    .creating-pulse::before,
-    .creating-pulse::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      animation: pulse-ring 1.8s ease-out infinite;
-    }
-    .creating-pulse::after { animation-delay: 0.4s; }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.5); opacity: 0.8; }
-      100% { transform: scale(1.8); opacity: 0; }
-    }
+    /* ─── Modal / Presentation ─── */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(12px)}
+    .modal-bg.open{opacity:1;pointer-events:auto}
+    .modal-card{width:90vw;max-width:1100px;max-height:90vh;overflow-y:auto;border-radius:24px;box-shadow:0 30px 90px rgba(0,0,0,.6);transform:scale(.9) translateY(30px);transition:transform .35s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}
+    .modal-bg.open .modal-card{transform:scale(1) translateY(0)}
 
-    /* ─── Modal ─── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.92);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-      backdrop-filter: blur(8px);
-    }
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .modal-card .m-bar{height:6px;width:100%;flex-shrink:0}
+    .modal-card .m-img{width:100%;max-height:360px;object-fit:cover;display:block}
+    .modal-card .m-body{padding:3rem 4rem;display:flex;flex-direction:column;gap:1.5rem;background:var(--card)}
+    .modal-card .m-badge{display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .modal-card .m-badge .mb-dot{width:10px;height:10px;border-radius:50%}
+    .modal-card .m-title{font-size:2.8rem;font-weight:900;line-height:1.15;letter-spacing:-.025em;color:#fff}
+    .modal-card .m-tagline{font-size:1.1rem;font-weight:500;color:var(--text2);margin-top:-.5rem}
+    .modal-card .m-bullets{display:flex;flex-direction:column;gap:.75rem}
+    .modal-card .m-bul{display:flex;gap:.85rem;align-items:flex-start;font-size:1.15rem;line-height:1.65;color:var(--text2);padding:.35rem .65rem;border-radius:10px}
+    .modal-card .m-bul.mhl{background:rgba(255,255,255,.04);color:var(--text)}
+    .modal-card .m-bul .mbd{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:.55em}
+    .modal-card .m-notes{margin-top:auto;padding-top:1.25rem;border-top:1px solid var(--border);font-size:.9rem;color:var(--muted);font-style:italic;line-height:1.6}
 
-    .modal-slide {
-      width: 88vw;
-      max-width: 1100px;
-      background: var(--card);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: var(--shadow-modal);
-      transform: scale(0.92) translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-overlay.open .modal-slide {
-      transform: scale(1) translateY(0);
-    }
+    .m-close{position:fixed;top:1.25rem;right:1.25rem;z-index:1001;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:1.3rem;transition:.2s;backdrop-filter:blur(6px)}
+    .modal-bg.open .m-close{display:flex}
+    .m-close:hover{background:rgba(255,255,255,.16)}
 
-    .modal-slide .modal-accent {
-      height: 6px;
-      width: 100%;
-    }
+    .m-nav{position:fixed;top:50%;transform:translateY(-50%);z-index:1001;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;width:48px;height:48px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:1.4rem;transition:.2s;backdrop-filter:blur(6px)}
+    .modal-bg.open .m-nav{display:flex}
+    .m-nav:hover{background:rgba(255,255,255,.14)}
+    .m-nav.prev{left:1.25rem}
+    .m-nav.next{right:1.25rem}
 
-    .modal-slide .modal-inner {
-      padding: 3.5rem 4.5rem 3rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      min-height: 50vh;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
+    .m-dots{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);z-index:1001;display:none;gap:.45rem;align-items:center}
+    .modal-bg.open .m-dots{display:flex}
+    .m-dots .di{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:.2s;cursor:pointer}
+    .m-dots .di.active{transform:scale(1.35)}
 
-    .modal-slide .modal-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .modal-slide .modal-badge .badge-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-    }
-
-    .modal-slide .modal-title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      color: #fff;
-    }
-
-    .modal-slide .modal-body {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .modal-slide .modal-bullet {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-      font-size: 1.15rem;
-      line-height: 1.65;
-      color: var(--text-secondary);
-    }
-
-    .modal-slide .modal-bullet .mbdot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 0.55em;
-    }
-
-    .modal-slide .modal-notes {
-      margin-top: auto;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-      font-size: 0.9rem;
-      color: var(--muted);
-      font-style: italic;
-      line-height: 1.6;
-    }
-
-    .modal-slide .modal-img {
-      width: 100%;
-      max-height: 320px;
-      object-fit: cover;
-      border-radius: 12px;
-    }
-
-    .modal-close {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.5rem;
-      z-index: 1001;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff;
-      width: 44px; height: 44px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      transition: background 0.2s;
-      backdrop-filter: blur(8px);
-    }
-    .modal-overlay.open .modal-close { display: flex; }
-    .modal-close:hover { background: rgba(255,255,255,0.2); }
-
-    .modal-nav {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 1001;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      transition: background 0.2s, transform 0.2s;
-      backdrop-filter: blur(8px);
-    }
-    .modal-overlay.open .modal-nav { display: flex; }
-    .modal-nav:hover { background: rgba(255,255,255,0.15); }
-    .modal-nav.prev { left: 1.5rem; }
-    .modal-nav.next { right: 1.5rem; }
-
-    .modal-counter {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1001;
-      display: none;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    .modal-overlay.open .modal-counter { display: flex; }
-    .modal-counter .dot-indicator {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      transition: background 0.2s, transform 0.2s;
-      cursor: pointer;
-    }
-    .modal-counter .dot-indicator.active {
-      background: var(--accent);
-      transform: scale(1.3);
-    }
-
-    @media (max-width: 900px) {
-      .workspace { flex-direction: column; }
-      .log-panel { width: 100%; }
-      .slides-grid { grid-template-columns: 1fr; }
-      .modal-slide .modal-inner { padding: 2rem; }
-      .modal-slide .modal-title { font-size: 1.6rem; }
-      main { padding: 1rem; }
+    @media(max-width:900px){
+      .workspace{flex-direction:column}
+      .log-panel{width:100%}
+      .slides-grid{grid-template-columns:1fr}
+      .modal-card .m-body{padding:1.5rem}
+      .modal-card .m-title{font-size:1.5rem}
+      main{padding:1rem}
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo-icon">G</div>
-    <h1>Презентация <span>— 5 агентов параллельно</span></h1>
-  </header>
+<header>
+  <div class="logo">G</div>
+  <h1>Slides<span>— 5 agents + Design Agent</span></h1>
+</header>
 
-  <main>
-    <div id="status" class="status-bar idle">
-      Введите тему и нажмите «Создать». Слайды появятся по мере готовности.
-    </div>
+<main>
+  <div id="status" class="status idle">Введите тему и нажмите «Создать». Контент → Дизайн → Изображения.</div>
 
-    <div class="form-row">
-      <input type="text" id="topic" placeholder="Тема презентации (например: Введение в ИИ)" />
-      <button type="button" id="run">✦ Создать слайды</button>
-    </div>
-
-    <div class="workspace">
-      <div class="log-panel" id="logPanel">
-        <div class="log-header" id="logToggle">
-          <h2>Лог агентов</h2>
-          <div class="log-toggle">◀</div>
-        </div>
-        <div class="log-body" id="log"></div>
-      </div>
-
-      <div class="slides-panel">
-        <div class="slides-grid" id="slides"></div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modal -->
-  <div id="modal" class="modal-overlay">
-    <button class="modal-close" id="modalClose">✕</button>
-    <button class="modal-nav prev" id="modalPrev">‹</button>
-    <button class="modal-nav next" id="modalNext">›</button>
-    <div class="modal-slide" id="modalSlide"></div>
-    <div class="modal-counter" id="modalCounter"></div>
+  <div class="form-row">
+    <input type="text" id="topic" placeholder="Тема презентации (например: Введение в ИИ)" />
+    <button type="button" id="run">✦ Создать слайды</button>
   </div>
 
-  <script>
-    const SLIDE_COUNT = 5;
-    const ACCENTS = ['#667eea','#f5576c','#4facfe','#43e97b','#fa709a'];
-    const GRADIENTS = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    ];
+  <div class="workspace">
+    <div class="log-panel" id="logPanel">
+      <div class="log-hdr" id="logToggle">
+        <h2>Лог агентов</h2>
+        <div class="log-arr">◀</div>
+      </div>
+      <div class="log-body" id="log"></div>
+    </div>
+    <div class="slides-panel">
+      <div class="slides-grid" id="slides"></div>
+    </div>
+  </div>
+</main>
 
-    const statusEl  = document.getElementById('status');
-    const topicEl   = document.getElementById('topic');
-    const runBtn    = document.getElementById('run');
-    const logEl     = document.getElementById('log');
-    const slidesEl  = document.getElementById('slides');
-    const logPanel  = document.getElementById('logPanel');
-    const logToggle = document.getElementById('logToggle');
-    const modalEl   = document.getElementById('modal');
-    const modalSlide = document.getElementById('modalSlide');
-    const modalClose = document.getElementById('modalClose');
-    const modalPrev = document.getElementById('modalPrev');
-    const modalNext = document.getElementById('modalNext');
-    const modalCounter = document.getElementById('modalCounter');
+<!-- Modal -->
+<div id="modal" class="modal-bg">
+  <button class="m-close" id="mClose">✕</button>
+  <button class="m-nav prev" id="mPrev">‹</button>
+  <button class="m-nav next" id="mNext">›</button>
+  <div class="modal-card" id="mCard"></div>
+  <div class="m-dots" id="mDots"></div>
+</div>
 
-    let slideState = [];
-    let currentModal = -1;
+<script>
+const N=5;
+const FALLBACK_ACCENTS=['#667eea','#f5576c','#4facfe','#43e97b','#fa709a'];
+const FALLBACK_GRADS=[
+  ['#667eea','#764ba2'],['#f093fb','#f5576c'],['#4facfe','#00f2fe'],['#43e97b','#38f9d7'],['#fa709a','#fee140']
+];
 
-    /* ─── Helpers ─── */
-    function esc(s) {
-      const d = document.createElement('div');
-      d.textContent = typeof s === 'string' ? s : String(s);
-      return d.innerHTML;
+const $=id=>document.getElementById(id);
+const statusEl=$('status'), topicEl=$('topic'), runBtn=$('run'), logEl=$('log'),
+      slidesEl=$('slides'), logPanel=$('logPanel'), logToggle=$('logToggle'),
+      modalEl=$('modal'), mCard=$('mCard'), mClose=$('mClose'),
+      mPrev=$('mPrev'), mNext=$('mNext'), mDots=$('mDots');
+
+let state=[], curM=-1;
+
+function esc(s){const d=document.createElement('div');d.textContent=typeof s==='string'?s:String(s);return d.innerHTML}
+
+/* Status */
+function setStatus(cls,text,spin){
+  statusEl.className='status '+cls;
+  statusEl.innerHTML=(spin?'<div class="spinner"></div>':'')+(cls==='done'?'<span style="font-size:1.1rem">✓</span>':'')+' '+esc(text);
+}
+
+/* Log */
+logToggle.onclick=()=>logPanel.classList.toggle('collapsed');
+function addLog(e){
+  const d=document.createElement('div');d.className='ll';
+  const tag=e.event||'', inner=e.data||{}, ev=inner.event||'',
+        dat=inner.data!==undefined?(typeof inner.data==='object'?JSON.stringify(inner.data):String(inner.data)):'';
+  d.innerHTML='<span class="t">'+esc(tag)+'</span> <span class="e">'+esc(ev)+'</span> '+esc(dat).slice(0,180);
+  logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;
+}
+
+/* State helpers */
+function ensure(){while(state.length<N)state.push({phase:'creating'})}
+function setSlide(idx,slide,ph){
+  ensure();const i=idx-1;if(i<0||i>=N)return;
+  const p=state[i];
+  state[i]={...p,phase:p.phase==='creating'?'content':p.phase,slide:slide||null,placeholderUrl:ph||(p&&p.placeholderUrl)||null};
+  render(i);
+}
+function setDesign(idx,design){
+  ensure();const i=idx-1;if(i<0||i>=N)return;
+  state[i]={...state[i],phase:'designed',design};
+  render(i);
+}
+function setImage(idx,img){
+  ensure();const i=idx-1;if(i<0||i>=N)return;
+  state[i]={...state[i],imageBase64:img};
+  render(i);
+}
+
+/* Accent / gradient helpers */
+function ac(i){const d=state[i]&&state[i].design;return d&&d.accentColor?d.accentColor:FALLBACK_ACCENTS[i%5]}
+function grad(i){
+  const d=state[i]&&state[i].design;
+  if(d&&d.gradientFrom&&d.gradientTo) return 'linear-gradient('+(d.gradientAngle||135)+'deg,'+d.gradientFrom+','+d.gradientTo+')';
+  const f=FALLBACK_GRADS[i%5];return 'linear-gradient(135deg,'+f[0]+','+f[1]+')';
+}
+function icon(i){const d=state[i]&&state[i].design;return d&&d.icon?d.icon:'📄'}
+function tagline(i){const d=state[i]&&state[i].design;return d&&d.tagline?d.tagline:''}
+function layout(i){const d=state[i]&&state[i].design;return d&&d.layout?d.layout:'bullets'}
+function hlSet(i){const d=state[i]&&state[i].design;return new Set(d&&Array.isArray(d.highlightLines)?d.highlightLines:[])}
+
+/* ─── Render Card ─── */
+function render(i){
+  let el=document.getElementById('s'+i);
+  if(!el){el=document.createElement('div');el.id='s'+i;slidesEl.appendChild(el)}
+  const s=state[i];
+  const a=ac(i), g=grad(i);
+
+  if(!s||s.phase==='creating'){
+    el.className='card creating';
+    el.style.background='';
+    el.innerHTML=
+      '<div class="bar" style="background:'+g+'"></div>'+
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem">'+
+        '<div class="pulse-ring" style="background:'+a+'"></div>'+
+        '<div class="card-title">Агент '+(i+1)+' создаёт слайд…</div>'+
+      '</div>';
+    el.onclick=null;return;
+  }
+
+  const slide=s.slide;
+  const designed=!!s.design;
+  const title=slide?(slide.title||''):'';
+  const body=(slide&&slide.body)?slide.body:[];
+  const notes=slide&&slide.notes?slide.notes:'';
+  const hl=hlSet(i);
+  const ic=icon(i);
+  const tl=tagline(i);
+  const ly=layout(i);
+
+  el.className='card ready'+(designed?'':' designing');
+
+  // Image
+  let imgH='';
+  if(s.imageBase64){
+    imgH='<img class="card-img" src="data:image/png;base64,'+s.imageBase64+'" alt="" />';
+  } else if(s.placeholderUrl){
+    imgH='<img class="card-img" src="'+esc(s.placeholderUrl)+'" alt="" />';
+  } else {
+    imgH='<div class="card-img-placeholder">'+ic+'</div>';
+  }
+
+  // Bullets
+  let bullH='';
+  body.forEach(function(line,j){
+    const isHl=hl.has(j);
+    bullH+='<div class="bul'+(isHl?' hl':'')+'"><div class="bd" style="background:'+a+'"></div><span>'+esc(line)+'</span></div>';
+  });
+
+  // Notes
+  let notesH=notes?'<div class="card-notes">'+esc(notes)+'</div>':'';
+
+  // Badge
+  let badgeH='<div class="badge" style="background:'+a+'18;color:'+a+'"><span>'+ic+'</span> Слайд '+(i+1)+'</div>';
+
+  // Tagline
+  let tagH=tl?'<div class="card-tagline">'+esc(tl)+'</div>':'';
+
+  el.innerHTML=
+    '<div class="bar" style="background:'+g+'"></div>'+
+    imgH+
+    '<div class="card-content">'+
+      badgeH+
+      '<div class="card-title">'+esc(title)+'</div>'+
+      tagH+
+      '<div class="card-bullets">'+bullH+'</div>'+
+      notesH+
+    '</div>';
+
+  el.onclick=function(){openModal(i)};
+}
+
+function renderAll(){ensure();slidesEl.innerHTML='';for(let i=0;i<N;i++){const el=document.createElement('div');el.id='s'+i;slidesEl.appendChild(el);render(i)}}
+
+/* ─── Modal ─── */
+function openModal(i){
+  const s=state[i];if(!s||!s.slide)return;
+  curM=i;renderModal(i);modalEl.classList.add('open');document.body.style.overflow='hidden';
+}
+function renderModal(i){
+  const s=state[i];if(!s||!s.slide)return;
+  const slide=s.slide, a=ac(i), g=grad(i), ic=icon(i), tl=tagline(i), hl=hlSet(i);
+
+  let imgH='';
+  if(s.imageBase64) imgH='<img class="m-img" src="data:image/png;base64,'+s.imageBase64+'" alt="" />';
+  else if(s.placeholderUrl) imgH='<img class="m-img" src="'+esc(s.placeholderUrl)+'" alt="" />';
+
+  let bullH='';
+  (slide.body||[]).forEach(function(line,j){
+    const isHl=hl.has(j);
+    bullH+='<div class="m-bul'+(isHl?' mhl':'')+'"><div class="mbd" style="background:'+a+'"></div><span>'+esc(line)+'</span></div>';
+  });
+
+  let notesH=slide.notes?'<div class="m-notes">'+esc(slide.notes)+'</div>':'';
+  let tagH=tl?'<div class="m-tagline">'+esc(tl)+'</div>':'';
+
+  mCard.innerHTML=
+    '<div class="m-bar" style="background:'+g+'"></div>'+
+    imgH+
+    '<div class="m-body">'+
+      '<div class="m-badge"><div class="mb-dot" style="background:'+a+'"></div>'+ic+' Слайд '+(i+1)+' из '+N+'</div>'+
+      '<div class="m-title">'+esc(slide.title||'')+'</div>'+
+      tagH+
+      '<div class="m-bullets">'+bullH+'</div>'+
+      notesH+
+    '</div>';
+
+  let dotsH='';
+  for(let j=0;j<N;j++) dotsH+='<div class="di'+(j===i?' active':'')+'" data-i="'+j+'" style="'+(j===i?'background:'+a:'')+'"></div>';
+  mDots.innerHTML=dotsH;
+  mDots.querySelectorAll('.di').forEach(function(d){d.onclick=function(){const idx=+this.dataset.i;if(state[idx]&&state[idx].slide){curM=idx;renderModal(idx)}}});
+}
+function closeModal(){modalEl.classList.remove('open');document.body.style.overflow='';curM=-1}
+mClose.onclick=closeModal;
+modalEl.onclick=function(e){if(e.target===modalEl)closeModal()};
+mPrev.onclick=function(){let n=curM-1;while(n>=0&&(!state[n]||!state[n].slide))n--;if(n>=0){curM=n;renderModal(n)}};
+mNext.onclick=function(){let n=curM+1;while(n<N&&(!state[n]||!state[n].slide))n++;if(n<N){curM=n;renderModal(n)}};
+document.addEventListener('keydown',function(e){if(curM<0)return;if(e.key==='Escape')closeModal();if(e.key==='ArrowLeft')mPrev.click();if(e.key==='ArrowRight')mNext.click()});
+
+/* ─── SSE ─── */
+runBtn.addEventListener('click',async function(){
+  const topic=topicEl.value.trim()||'Презентация';
+  runBtn.disabled=true;logEl.innerHTML='';state=[];
+  setStatus('running','Фаза 1: 5 агентов создают контент…',true);
+  renderAll();
+
+  try{
+    const res=await fetch('/api/slides',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic})});
+    if(!res.ok||!res.body){setStatus('error','Ошибка: '+res.status);runBtn.disabled=false;return}
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    let buf='',designSeen=false,imgSeen=false;
+
+    while(true){
+      const{value,done}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const parts=buf.split('\n\n');buf=parts.pop()||'';
+      for(const p of parts) processLine(p,topic);
     }
+    if(buf.trim()) buf.split('\n\n').forEach(function(l){processLine(l,topic)});
 
-    /* ─── Status ─── */
-    function setStatus(cls, text, showSpinner) {
-      statusEl.className = 'status-bar ' + cls;
-      statusEl.innerHTML = (showSpinner ? '<div class="spinner"></div>' : '') +
-        (cls === 'done' ? '<span class="check">✓</span>' : '') +
-        esc(text);
-    }
-
-    /* ─── Log ─── */
-    logToggle.onclick = () => logPanel.classList.toggle('collapsed');
-
-    function addLog(entry) {
-      const div = document.createElement('div');
-      div.className = 'log-line';
-      const tag = entry.event || '';
-      const inner = entry.data || {};
-      const ev = inner.event || '';
-      const dat = inner.data !== undefined
-        ? (typeof inner.data === 'object' ? JSON.stringify(inner.data) : String(inner.data))
-        : '';
-      div.innerHTML = '<span class="tag">' + esc(tag) + '</span> ' +
-        '<span class="ev">' + esc(ev) + '</span> ' +
-        esc(dat).slice(0, 200);
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    /* ─── Slides ─── */
-    function ensureSlots() {
-      while (slideState.length < SLIDE_COUNT) slideState.push({ creating: true });
-    }
-
-    function setSlide(index, slide, placeholderUrl, imageBase64) {
-      ensureSlots();
-      const i = index - 1;
-      if (i < 0 || i >= SLIDE_COUNT) return;
-      const prev = slideState[i];
-      slideState[i] = {
-        creating: false,
-        slide: slide || null,
-        placeholderUrl: placeholderUrl || (prev && prev.placeholderUrl) || null,
-        imageBase64: imageBase64 !== undefined ? imageBase64 : (prev && prev.imageBase64),
-      };
-      renderCard(i);
-    }
-
-    function setSlideImage(index, imageBase64) {
-      ensureSlots();
-      const i = index - 1;
-      if (i < 0 || i >= slideState.length) return;
-      slideState[i].imageBase64 = imageBase64;
-      renderCard(i);
-    }
-
-    function renderCard(i) {
-      let el = document.getElementById('slide-' + i);
-      if (!el) {
-        el = document.createElement('div');
-        el.id = 'slide-' + i;
-        slidesEl.appendChild(el);
-      }
-      const s = slideState[i];
-      const accent = ACCENTS[i % ACCENTS.length];
-      const gradient = GRADIENTS[i % GRADIENTS.length];
-
-      if (!s || s.creating) {
-        el.className = 'slide-card creating';
-        el.innerHTML =
-          '<div class="accent-bar" style="background:' + gradient + '"></div>' +
-          '<div class="card-inner">' +
-            '<div class="creating-pulse" style="background:' + accent + '"></div>' +
-            '<div class="card-title">Агент ' + (i + 1) + ' создаёт слайд…</div>' +
-          '</div>';
-        el.onclick = null;
-        return;
-      }
-
-      const slide = s.slide;
-      el.className = 'slide-card ready';
-      const title = slide ? (slide.title || '') : '';
-      const bodyItems = (slide && slide.body) ? slide.body : [];
-      const notes = slide && slide.notes ? slide.notes : '';
-
-      let bulletsHtml = '';
-      bodyItems.forEach(function(line) {
-        bulletsHtml += '<div class="bullet"><div class="dot" style="background:' + accent + '"></div><span>' + esc(line) + '</span></div>';
-      });
-
-      let imgHtml = '';
-      if (s.imageBase64) {
-        imgHtml = '<img class="card-image" src="data:image/png;base64,' + s.imageBase64 + '" alt="" />';
-      } else if (s.placeholderUrl) {
-        imgHtml = '<img class="card-image" src="' + esc(s.placeholderUrl) + '" alt="" />';
-      }
-
-      let notesHtml = '';
-      if (notes) {
-        notesHtml = '<div class="card-notes">' + esc(notes) + '</div>';
-      }
-
-      el.innerHTML =
-        '<div class="accent-bar" style="background:' + gradient + '"></div>' +
-        '<div class="card-inner">' +
-          '<div class="slide-number" style="background:' + accent + '">' + (i + 1) + '</div>' +
-          '<div class="card-title">' + esc(title) + '</div>' +
-          '<div class="card-body">' + bulletsHtml + '</div>' +
-          notesHtml +
-        '</div>' +
-        imgHtml;
-
-      el.onclick = function() { openModal(i); };
-    }
-
-    function renderAll() {
-      ensureSlots();
-      slidesEl.innerHTML = '';
-      for (let i = 0; i < SLIDE_COUNT; i++) {
-        const el = document.createElement('div');
-        el.id = 'slide-' + i;
-        slidesEl.appendChild(el);
-        renderCard(i);
-      }
-    }
-
-    /* ─── Modal ─── */
-    function openModal(i) {
-      const s = slideState[i];
-      if (!s || !s.slide) return;
-      currentModal = i;
-      renderModal(i);
-      modalEl.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function renderModal(i) {
-      const s = slideState[i];
-      if (!s || !s.slide) return;
-      const slide = s.slide;
-      const accent = ACCENTS[i % ACCENTS.length];
-      const gradient = GRADIENTS[i % GRADIENTS.length];
-
-      let bulletsHtml = '';
-      (slide.body || []).forEach(function(line) {
-        bulletsHtml += '<div class="modal-bullet"><div class="mbdot" style="background:' + accent + '"></div><span>' + esc(line) + '</span></div>';
-      });
-
-      let imgHtml = '';
-      if (s.imageBase64) {
-        imgHtml = '<img class="modal-img" src="data:image/png;base64,' + s.imageBase64 + '" alt="" />';
-      } else if (s.placeholderUrl) {
-        imgHtml = '<img class="modal-img" src="' + esc(s.placeholderUrl) + '" alt="" />';
-      }
-
-      let notesHtml = '';
-      if (slide.notes) {
-        notesHtml = '<div class="modal-notes">' + esc(slide.notes) + '</div>';
-      }
-
-      modalSlide.innerHTML =
-        '<div class="modal-accent" style="background:' + gradient + '"></div>' +
-        '<div class="modal-inner">' +
-          '<div class="modal-badge"><div class="badge-dot" style="background:' + accent + '"></div>Слайд ' + (i + 1) + ' из ' + SLIDE_COUNT + '</div>' +
-          '<div class="modal-title">' + esc(slide.title || '') + '</div>' +
-          imgHtml +
-          '<div class="modal-body">' + bulletsHtml + '</div>' +
-          notesHtml +
-        '</div>';
-
-      /* dots */
-      let dotsHtml = '';
-      for (let j = 0; j < SLIDE_COUNT; j++) {
-        dotsHtml += '<div class="dot-indicator' + (j === i ? ' active' : '') + '" data-i="' + j + '" style="' + (j === i ? 'background:' + accent : '') + '"></div>';
-      }
-      modalCounter.innerHTML = dotsHtml;
-      modalCounter.querySelectorAll('.dot-indicator').forEach(function(dot) {
-        dot.onclick = function() {
-          const idx = parseInt(this.dataset.i);
-          if (slideState[idx] && slideState[idx].slide) { currentModal = idx; renderModal(idx); }
-        };
-      });
-    }
-
-    function closeModal() {
-      modalEl.classList.remove('open');
-      document.body.style.overflow = '';
-      currentModal = -1;
-    }
-
-    modalClose.onclick = closeModal;
-    modalEl.onclick = function(e) { if (e.target === modalEl) closeModal(); };
-    modalPrev.onclick = function() {
-      let n = currentModal - 1;
-      while (n >= 0 && (!slideState[n] || !slideState[n].slide)) n--;
-      if (n >= 0) { currentModal = n; renderModal(n); }
-    };
-    modalNext.onclick = function() {
-      let n = currentModal + 1;
-      while (n < SLIDE_COUNT && (!slideState[n] || !slideState[n].slide)) n++;
-      if (n < SLIDE_COUNT) { currentModal = n; renderModal(n); }
-    };
-    document.addEventListener('keydown', function(e) {
-      if (currentModal < 0) return;
-      if (e.key === 'Escape') closeModal();
-      if (e.key === 'ArrowLeft') modalPrev.click();
-      if (e.key === 'ArrowRight') modalNext.click();
-    });
-
-    /* ─── Run ─── */
-    runBtn.addEventListener('click', async function() {
-      const topic = topicEl.value.trim() || 'Презентация';
-      runBtn.disabled = true;
-      logEl.innerHTML = '';
-      slideState = [];
-      setStatus('running', 'Запуск 5 агентов… Слайды появятся по мере готовности.', true);
-      renderAll();
-
-      try {
-        const res = await fetch('/api/slides', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic }),
-        });
-        if (!res.ok || !res.body) {
-          setStatus('error', 'Ошибка: ' + res.status);
-          runBtn.disabled = false;
-          return;
+    function processLine(line,topic){
+      if(!line.startsWith('data: '))return;
+      try{
+        const m=JSON.parse(line.slice(6));
+        if(m.type==='log'){
+          addLog(m);
+          if(!designSeen&&m.event&&String(m.event).includes('DesignAgent')){designSeen=true;setStatus('design','Фаза 2: Дизайн-агент стилизует слайды…',true)}
         }
-
-        const reader = res.body.getReader();
-        const dec = new TextDecoder();
-        let buf = '';
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buf += dec.decode(value, { stream: true });
-          const lines = buf.split('\n\n');
-          buf = lines.pop() || '';
-          for (const line of lines) processSSE(line, topic);
+        else if(m.type==='slide') setSlide(m.index,m.slide,m.placeholderUrl);
+        else if(m.type==='design') setDesign(m.index,m.design);
+        else if(m.type==='slideImage'){
+          if(!imgSeen){imgSeen=true;setStatus('images','Фаза 3: Генерация изображений…',true)}
+          setImage(m.index,m.imageBase64);
         }
-        if (buf.trim()) {
-          buf.split('\n\n').forEach(function(l) { processSSE(l, topic); });
-        }
-      } catch (e) {
-        setStatus('error', e.message || 'Ошибка сети');
-      }
-      runBtn.disabled = false;
-    });
-
-    function processSSE(line, topic) {
-      if (!line.startsWith('data: ')) return;
-      try {
-        const msg = JSON.parse(line.slice(6));
-        if (msg.type === 'log') addLog(msg);
-        else if (msg.type === 'slide') setSlide(msg.index, msg.slide, msg.placeholderUrl, null);
-        else if (msg.type === 'slideImage') setSlideImage(msg.index, msg.imageBase64);
-        else if (msg.type === 'done') {
-          setStatus('done', 'Готово! Все ' + SLIDE_COUNT + ' слайдов созданы.');
-          const list = msg.slides || [];
-          for (let i = 0; i < SLIDE_COUNT; i++) {
-            const s = list[i];
-            const ph = (slideState[i] && slideState[i].placeholderUrl) ||
-              ('https://picsum.photos/seed/' + encodeURIComponent(topic) + (i + 1) + '/800/450');
-            setSlide(i + 1, s || null, ph, slideState[i] && slideState[i].imageBase64);
+        else if(m.type==='done'){
+          setStatus('done','Готово! '+N+' слайдов с дизайном и изображениями.');
+          const list=m.slides||[], designs=m.designs||[];
+          for(let i=0;i<N;i++){
+            const s=list[i],ph=(state[i]&&state[i].placeholderUrl)||('https://picsum.photos/seed/'+encodeURIComponent(topic)+(i+1)+'/800/450');
+            setSlide(i+1,s||null,ph);
+            if(designs[i])setDesign(i+1,designs[i]);
           }
-        } else if (msg.type === 'error') {
-          setStatus('error', msg.message || 'Ошибка');
         }
-      } catch (_) {}
+        else if(m.type==='error') setStatus('error',m.message||'Ошибка');
+      }catch(_){}
     }
-  </script>
+  }catch(e){setStatus('error',e.message||'Ошибка сети')}
+  runBtn.disabled=false;
+});
+</script>
 </body>
 </html>

@@ -80,20 +80,24 @@ async function main() {
       topic,
       debugLog: debugLogger("[Orchestrator]"),
     });
-    const slides = await orchestrator.run();
+    const result = await orchestrator.run();
     console.log("\n--- Slides ---\n");
-    slides.forEach((s, i) => {
+    result.slides.forEach((s, i) => {
       if (s) {
         console.log(`Slide ${i + 1}: ${s.title}`);
-        s.body.forEach((line) => console.log(`  ${line}`));
+        s.body.forEach((line: string) => console.log(`  ${line}`));
         if (s.notes) console.log(`  Notes: ${s.notes}`);
       } else {
         console.log(`Slide ${i + 1}: (empty)`);
       }
       console.log("");
     });
+    console.log("\n--- Designs ---\n");
+    result.designs.forEach((d, i) => {
+      console.log(`Slide ${i + 1} design:`, d ? `${d.icon} ${d.layout} ${d.accentColor}` : "(none)");
+    });
     console.log("\n--- JSON ---\n");
-    console.log(JSON.stringify(slides, null, 2));
+    console.log(JSON.stringify(result, null, 2));
     return;
   }
 
