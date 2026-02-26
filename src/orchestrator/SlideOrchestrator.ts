@@ -100,17 +100,19 @@ Each design object must have these fields:
 - layout: one of "hero", "bullets", "split", "quote", "stats", "big-number", "minimal"
   • slide 1 should usually be "hero"
   • pick the best layout for each slide's content
-- accentColor: a vibrant hex color (e.g. "#7c5cfc")
-- gradientFrom: start color of background gradient (dark, rich color)
-- gradientTo: end color of background gradient
+- accentColor: a clean, corporate hex color (e.g. "#d52b1e", "#4f56e8", "#0891b2", "#059669", "#d97706"). Choose rich but not neon colors.
+- gradientFrom: not used for background (UI is white/light), but use for accent gradient (e.g. the accentColor)
+- gradientTo: lighter shade of gradientFrom
 - gradientAngle: angle in degrees (e.g. 135)
 - icon: a single relevant emoji that represents the slide topic
-- darkText: false (for dark backgrounds) or true (for light backgrounds)
-- highlightLines: array of 0-based indices of body lines to visually highlight
+- darkText: true (the UI is light-mode with white cards)
+- highlightLines: array of 0-based indices of body lines to visually highlight (pick 1-2 most important)
 - tagline: a short punchy subtitle (3-6 words) that complements the title
-- imagePrompt: a detailed prompt for AI image generation. Describe a specific, visually striking scene or concept art that matches the slide. Be very descriptive about colors, mood, composition. Say "Do NOT include any text or letters." at the end.
+- imagePrompt: a VERY detailed prompt for AI image generation (Nano Banana). The image MUST be directly related to the slide topic "${this.topic}". Describe a specific scene, concept, or visualization that illustrates the slide content. Include: art style (3D render, isometric, flat illustration, photo-realistic), mood, lighting, specific objects. End with "Do NOT include any text or letters in the image."
 
-Choose a cohesive color palette across all 5 slides — they should feel like one presentation. Use ultra-modern, premium aesthetics. Think: dark gradients, neon accents, glassmorphism vibes.
+IMPORTANT for imagePrompt: Each image must visually represent the slide's specific content about "${this.topic}". Do NOT generate generic nature/landscape images. For example, if the topic is AI, generate futuristic tech imagery, neural networks, robots, data visualizations, etc.
+
+Choose a cohesive color palette across all 5 slides — they should feel like one professional presentation. Style: clean, corporate, modern dashboard aesthetic with white backgrounds and colored accents. Think Lukoil, McKinsey, or Pitch.com quality.
 
 After writing all designs, respond with action FINISH.`;
 
