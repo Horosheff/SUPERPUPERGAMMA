@@ -11,7 +11,7 @@ Vanilla ReAct Agent — a single-package Node.js + TypeScript project (npm, no m
 
 ### Required secret
 
-`GEMINI_API_KEY` — required for all live AI functionality. Without it, only the built-in `demo` subcommand works (`npm run dev -- demo`). Obtain from [Google AI Studio](https://aistudio.google.com/apikey). Set via `.env` file (copy `.env.example`) or as an environment variable.
+`GEMINI_API_KEY` — required for all live AI functionality. Without it, only the built-in `demo` subcommand works (`npm run dev -- demo`). Obtain from [Google AI Studio](https://aistudio.google.com/apikey). The Cursor Cloud secret is named `KEY`; write it into `.env` as `GEMINI_API_KEY=$KEY` before running.
 
 ### Key commands
 
